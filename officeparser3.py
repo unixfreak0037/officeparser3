@@ -51,12 +51,12 @@ def copytoken_help(difference):
 def decompress_stream(compressed_container):
     # MS-OVBA
     # 2.4.1.2
-    decompressed_container = '' # result
+    decompressed_container = b'' # result - use bytes instead of string
     compressed_current = 0
     compressed_chunk_start = None
     decompressed_chunk_start = None
 
-    sig_byte = ord(compressed_container[compressed_current])
+    sig_byte = compressed_container[compressed_current]  # bytes object indexing returns int
     if sig_byte != 0x01:
         logging.error('invalid signature byte {0:02X}'.format(sig_byte))
         return None
@@ -90,13 +90,13 @@ def decompress_stream(compressed_container):
 
         decompressed_chunk_start = len(decompressed_container)
         while compressed_current < compressed_end:
-            flag_byte = ord(compressed_container[compressed_current])
+            flag_byte = compressed_container[compressed_current]  # bytes object indexing returns int
             compressed_current += 1
             for bit_index in range(0, 8):
                 if compressed_current >= compressed_end:
                     break
                 if (1 << bit_index) & flag_byte == 0: # LiteralToken
-                    decompressed_container += compressed_container[compressed_current]
+                    decompressed_container += bytes([compressed_container[compressed_current]])  # Convert single byte to bytes
                     compressed_current += 1
                     continue
 
@@ -112,7 +112,7 @@ def decompress_stream(compressed_container):
                 offset = (temp1 >> temp2) + 1
                 copy_source = len(decompressed_container) - offset
                 for index in range(copy_source, copy_source + length):
-                    decompressed_container += decompressed_container[index]
+                    decompressed_container += bytes([decompressed_container[index]])  # Convert single byte to bytes
                 compressed_current += 2
 
     return decompressed_container
@@ -551,7 +551,7 @@ def _main():
     ofdoc = CompoundBinaryFile(args[0], parser_options)
 
     if options.create_manifest:
-        manifest = open(os.path.join(options.output_dir, 'manifest'), 'wb')
+        manifest = open(os.path.join(options.output_dir, 'manifest'), 'w')
 
     #
     # print options
@@ -1087,7 +1087,7 @@ def _main():
             MODULENAME_Id = unpack("<H", dir_stream.read(2))[0]
             check_value('MODULENAME_Id', 0x0019, MODULENAME_Id)
             MODULENAME_SizeOfModuleName = unpack("<L", dir_stream.read(4))[0]
-            MODULENAME_ModuleName = dir_stream.read(MODULENAME_SizeOfModuleName)
+            MODULENAME_ModuleName = dir_stream.read(MODULENAME_SizeOfModuleName).decode("utf8", errors="ignore")
             # account for optional sections
             section_id = unpack("<H", dir_stream.read(2))[0]
             if section_id == 0x0047:
@@ -1098,7 +1098,7 @@ def _main():
             if section_id == 0x001A:
                 MODULESTREAMNAME_id = section_id
                 MODULESTREAMNAME_SizeOfStreamName = unpack("<L", dir_stream.read(4))[0]
-                MODULESTREAMNAME_StreamName = dir_stream.read(MODULESTREAMNAME_SizeOfStreamName)
+                MODULESTREAMNAME_StreamName = dir_stream.read(MODULESTREAMNAME_SizeOfStreamName).decode("utf8", errors="ignore")
                 MODULESTREAMNAME_Reserved = unpack("<H", dir_stream.read(2))[0]
                 check_value('MODULESTREAMNAME_Reserved', 0x0032, MODULESTREAMNAME_Reserved)
                 MODULESTREAMNAME_SizeOfStreamNameUnicode = unpack("<L", dir_stream.read(4))[0]
