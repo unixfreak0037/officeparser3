@@ -723,9 +723,9 @@ def _main():
                 # filename
                 i = 0
                 while i < len(data):
-                    if ord(data[i]) == 0:
+                    if data[i] == 0:
                         break
-                    filename.append(data[i])
+                    filename.append(chr(data[i]))
                     i += 1
                 filename = ''.join(filename)
                 data = data[i + 1:]
@@ -733,9 +733,9 @@ def _main():
                 # source path
                 i = 0
                 while i < len(data):
-                    if ord(data[i]) == 0:
+                    if data[i] == 0:
                         break
-                    src_path.append(data[i])
+                    src_path.append(chr(data[i]))
                     i += 1
                 src_path = ''.join(src_path)
                 data = data[i + 1:]
@@ -750,9 +750,9 @@ def _main():
                 # destination path? (interesting that it has my name in there)
                 i = 0
                 while i < len(data):
-                    if ord(data[i]) == 0:
+                    if data[i] == 0:
                         break
-                    dst_path.append(data[i])
+                    dst_path.append(chr(data[i]))
                     i += 1
                 dst_path = ''.join(dst_path)
                 data = data[i + 1:]
